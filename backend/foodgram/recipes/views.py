@@ -2,15 +2,13 @@ import io
 
 from django.db.models import F, Sum
 from django.http import FileResponse
-
-from rest_framework import filters, viewsets
-from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
-
 from django_filters.rest_framework import DjangoFilterBackend
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
+from rest_framework import filters, viewsets
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 
 from .filters import IngredientSearchFilter, RecipeFilter
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
@@ -53,8 +51,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in ['POST', 'PATCH']:
             return RecipeCreateSerializer
-        elif self.request.method == 'GET':
-            return RecipeSerializer
+        return RecipeSerializer
 
 
 class FavoriteView(APIView):

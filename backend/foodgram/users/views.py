@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,8 +14,7 @@ class ListSubscriptions(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = User.objects.filter(following__user=user)
-        return queryset
+        return User.objects.filter(following__user=user)
 
 
 class Subscribe(APIView):
@@ -28,13 +26,13 @@ class Subscribe(APIView):
                                                     author=author).exists()
         ):
             return Response(
-                {"errors": "Ошибка подписки (Например, если не был подписан"},
+                {'errors': 'Ошибка подписки (Например, если не был подписан'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         subscription = get_object_or_404(Follow, user=user, author=author)
         subscription.delete()
         return Response(
-            {"errors": "Успешная отписка"}, status=status.HTTP_204_NO_CONTENT
+            {'errors': 'Успешная отписка'}, status=status.HTTP_204_NO_CONTENT
         )
 
     def post(self, request, id):
@@ -44,12 +42,12 @@ class Subscribe(APIView):
                                                    author=author).exists():
             return Response(
                 {
-                    "errors": "Ошибка подписки (Например, если уже "
-                    "подписан или подписке на самого себя"
+                    'errors': 'Ошибка подписки (Например, если уже '
+                    'подписан или подписке на самого себя'
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         Follow.objects.get_or_create(user=user, author=author)
         serializer = SubscriptionsSerializer(author,
-                                             context={"request": request})
+                                             context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)

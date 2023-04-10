@@ -1,12 +1,9 @@
 from django.contrib.auth import authenticate, get_user_model
-
-from rest_framework import serializers
-
 from djoser.compat import get_user_email, get_user_email_field_name
 from djoser.conf import settings
+from rest_framework import serializers
 
-from recipes.models import Recipe
-
+from ..recipes.models import Recipe
 from .models import Follow
 
 User = get_user_model()
@@ -17,14 +14,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "email", "username", "first_name", "last_name",
-                  "is_subscribed")
+        fields = ('id', 'email', 'username', 'first_name', 'last_name',
+                  'is_subscribed')
 
     def get_is_subscribed(self, author):
         if (
-            self.context["request"].user.is_authenticated
+            self.context['request'].user.is_authenticated
             and Follow.objects.filter(
-                user=self.context["request"].user, author=author
+                user=self.context['request'].user, author=author
             ).exists()
         ):
             return True
@@ -36,18 +33,18 @@ class UserSerializer(serializers.ModelSerializer):
             instance_email = get_user_email(instance)
             if instance_email != validated_data[email_field]:
                 instance.is_active = False
-                instance.save(update_fields=["is_active"])
+                instance.save(update_fields=['is_active'])
         return super().update(instance, validated_data)
 
 
 class TokenCreateSerializer(serializers.Serializer):
     password = serializers.CharField(required=False,
-                                     style={"input_type": "password"})
+                                     style={'input_type': 'password'})
 
     default_error_messages = {
-        "invalid_credentials":
+        'invalid_credentials':
             settings.CONSTANTS.messages.INVALID_CREDENTIALS_ERROR,
-        "inactive_account":
+        'inactive_account':
             settings.CONSTANTS.messages.INACTIVE_ACCOUNT_ERROR,
     }
 
@@ -59,24 +56,25 @@ class TokenCreateSerializer(serializers.Serializer):
         self.fields[self.email_field] = serializers.EmailField()
 
     def validate(self, attrs):
-        password = attrs.get("password")
-        email = attrs.get("email")
+        password = attrs.get('password')
+        email = attrs.get('email')
         self.user = authenticate(
-            request=self.context.get("request"), email=email, password=password
+            request=self.context.get('request'), email=email, password=password
         )
         if not self.user:
             self.user = User.objects.filter(email=email).first()
             if self.user and not self.user.check_password(password):
-                self.fail("invalid_credentials")
+                self.fail('invalid_credentials')
         if self.user and self.user.is_active:
             return attrs
-        self.fail("invalid_credentials")
+        self.fail('invalid_credentials')
+        return None
 
 
 class FollowingRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ("id", "name", "image", "cooking_time")
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class SubscriptionsSerializer(serializers.ModelSerializer):
@@ -87,14 +85,14 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
-            "recipes",
-            "recipes_count",
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
         )
 
     def get_recipes(self, author):
@@ -103,11 +101,10 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, author):
         if Follow.objects.filter(
-            author=author, user=self.context["request"].user
+            author=author, user=self.context['request'].user
         ).exists():
             return True
         return False
 
     def get_recipes_count(self, author):
-        recipes_count = author.recipes.count()
-        return recipes_count
+        return author.recipes.count()
