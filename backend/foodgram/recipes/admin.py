@@ -6,20 +6,20 @@ from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        "id",
-        "name",
-        "author",
-        "recipe_count",
+        'id',
+        'name',
+        'author',
+        'recipe_count',
     )
-    list_filter = ("name", "author", "tags")
+    list_filter = ('name', 'author', 'tags')
 
 
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
-        "measurement_unit",
+        'name',
+        'measurement_unit',
     )
-    list_filter = ("name",)
+    list_filter = ('name',)
 
 
 admin.site.register(Recipe, RecipeAdmin)
