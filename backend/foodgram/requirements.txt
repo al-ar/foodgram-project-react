@@ -6,7 +6,7 @@ coreapi==2.3.3
 coreschema==0.0.4
 cryptography==40.0.1
 defusedxml==0.7.1
-Django==4.2
+Django==Django==3.2
 django-filter==23.1
 django-colorfield==0.6.3
 django-templated-mail==1.1.1
