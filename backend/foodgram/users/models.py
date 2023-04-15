@@ -49,6 +49,7 @@ class Follow(models.Model):
         return f'{self.user} подписан на {self.author}'
 
     class Meta:
+        ordering = ['-author_id']
         verbose_name = 'Подписки'
         verbose_name_plural = 'Подписки'
         db_table = 'db_follow'

@@ -9,6 +9,7 @@ from .models import Follow
 
 User = get_user_model()
 
+VISIBLE_QUANTITY = 3
 
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
@@ -19,14 +20,12 @@ class UserSerializer(serializers.ModelSerializer):
                   'is_subscribed')
 
     def get_is_subscribed(self, author):
-        if (
+        return (
             self.context['request'].user.is_authenticated
             and Follow.objects.filter(
                 user=self.context['request'].user, author=author
             ).exists()
-        ):
-            return True
-        return False
+        )
 
     def update(self, instance, validated_data):
         email_field = get_user_email_field_name(User)
@@ -97,15 +96,13 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         )
 
     def get_recipes(self, author):
-        recipes = author.recipes.all()[:3]
+        recipes = author.recipes.all()[:VISIBLE_QUANTITY]
         return FollowingRecipeSerializer(recipes, many=True).data
 
     def get_is_subscribed(self, author):
-        if Follow.objects.filter(
+        return Follow.objects.filter(
             author=author, user=self.context['request'].user
-        ).exists():
-            return True
-        return False
+        ).exists()
 
     def get_recipes_count(self, author):
         return author.recipes.count()
