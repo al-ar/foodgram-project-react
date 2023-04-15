@@ -11,6 +11,7 @@ User = get_user_model()
 
 VISIBLE_QUANTITY = 3
 
+
 class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
