@@ -4,6 +4,15 @@ from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 
 
+class IngredientInRecipeInline(admin.TabularInline):
+    model = IngredientInRecipe
+    min_num = 1
+    list_display = (
+        'ingredient',
+        'amount',
+    )
+
+
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -12,6 +21,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'recipe_count',
     )
     list_filter = ('name', 'author', 'tags')
+    inlines = (IngredientInRecipeInline,)
 
 
 class IngredientAdmin(admin.ModelAdmin):
