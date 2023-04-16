@@ -134,7 +134,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, recipe):
         current_user = self.context['request'].user
         return ShoppingCart.objects.filter(recipe=recipe,
-                                       user=current_user).exists()
+                                           user=current_user).exists()
 
     def create_ingredients(self, ingredients, recipe):
         bulk_list = list()
