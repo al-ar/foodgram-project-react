@@ -55,8 +55,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteView(APIView):
-    def delete(self, request, id):
-        return delete(request, id, Favorite)
+    def delete(self, request, pk):
+        return delete(request, pk, Favorite)
 
     def post(self, request, id):
         return post(request, id, Favorite)
