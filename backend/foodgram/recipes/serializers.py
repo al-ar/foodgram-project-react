@@ -78,8 +78,9 @@ class IngredientToCreateRecipeSerializer(serializers.Serializer):
         queryset=Ingredient.objects.all(), required=True
     )
     amount = serializers.IntegerField(required=True)
-    name = serializers.SerializerMethodField()
-    measurement_unit = serializers.SerializerMethodField()
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit')
 
     class Meta:
         model = IngredientInRecipe
@@ -92,12 +93,6 @@ class IngredientToCreateRecipeSerializer(serializers.Serializer):
                 f'и <{MAX_AMOUNT}'
             )
         return value
-
-    def get_measurement_unit(self, ingredient):
-        return ingredient.ingredient.measurement_unit
-
-    def get_name(self, ingredient):
-        return ingredient.ingredient.name
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
