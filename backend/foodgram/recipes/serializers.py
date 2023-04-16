@@ -6,6 +6,9 @@ from .fields import Base64ImageField
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 
+MIN_AMOUNT = 1
+MAX_AMOUNT = 32000
+
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,23 +58,19 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, recipe):
         current_user = self.context['request'].user
-        if (
+        return (
             self.context['request'].user.is_authenticated
             and Favorite.objects.filter(recipe=recipe,
                                         user=current_user).exists()
-        ):
-            return True
-        return False
+        )
 
     def get_is_in_shopping_cart(self, recipe):
         current_user = self.context['request'].user
-        if (
+        return (
             self.context['request'].user.is_authenticated
             and ShoppingCart.objects.filter(recipe=recipe,
                                             user=current_user).exists()
-        ):
-            return True
-        return False
+        )
 
 
 class IngredientToCreateRecipeSerializer(serializers.Serializer):
@@ -87,19 +86,18 @@ class IngredientToCreateRecipeSerializer(serializers.Serializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
     def validate_amount(self, value):
-        if value < 1:
+        if not MIN_AMOUNT < value < MAX_AMOUNT:
             raise serializers.ValidationError(
-                'Убедитесь, что количество ингредиентов больше 1'
+                f'Количество ингредиентов должно быть >{MIN_AMOUNT}'
+                f'и <{MAX_AMOUNT}'
             )
         return value
 
     def get_measurement_unit(self, ingredient):
-        measurement_unit = ingredient.ingredient.measurement_unit
-        return measurement_unit
+        return ingredient.ingredient.measurement_unit
 
     def get_name(self, ingredient):
-        name = ingredient.ingredient.name
-        return name
+        return ingredient.ingredient.name
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -130,18 +128,16 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, recipe):
         current_user = self.context['request'].user
-        if Favorite.objects.filter(recipe=recipe, user=current_user).exists():
-            return True
-        return False
+        return Favorite.objects.filter(recipe=recipe,
+                                       user=current_user).exists()
 
     def get_is_in_shopping_cart(self, recipe):
         current_user = self.context['request'].user
-        if ShoppingCart.objects.filter(recipe=recipe,
-                                       user=current_user).exists():
-            return True
-        return False
+        return ShoppingCart.objects.filter(recipe=recipe,
+                                       user=current_user).exists()
 
     def create_ingredients(self, ingredients, recipe):
+        bulk_list = list()
         for ingredient in ingredients:
             current_ingredient = ingredient['id']
             if IngredientInRecipe.objects.filter(
@@ -151,11 +147,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Убедитесь, что отсутствуют повторяющиеся ингредиенты'
                 )
-            IngredientInRecipe.objects.create(
-                ingredient=current_ingredient,
-                recipe=recipe,
-                amount=ingredient['amount'],
+            bulk_list.append(
+                IngredientInRecipe(
+                    ingredient=current_ingredient,
+                    recipe=recipe,
+                    amount=ingredient['amount'])
             )
+        IngredientInRecipe.objects.bulk_create(bulk_list)
 
     def create(self, validated_data):
         author = self.context['request'].user
