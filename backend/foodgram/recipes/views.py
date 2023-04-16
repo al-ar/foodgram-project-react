@@ -19,6 +19,15 @@ from .serializers import (IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, TagSerializer)
 from .utils import delete, post
 
+FONT_SIZE_HEADER = 24
+POSITION_X = 150
+POSITION_Y = 800
+FONT_SIZE = 16
+FROM_BOTTOM = 750
+MIN_BOTTOM = 50
+FROM_LEFT = 50
+LINE_SPACING = 20
+
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
@@ -55,11 +64,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteView(APIView):
-    def delete(self, request, pk):
-        return delete(request, pk, Favorite)
+    def delete(self, request, recipe_id):
+        return delete(request, recipe_id, Favorite)
 
-    def post(self, request, id):
-        return post(request, id, Favorite)
+    def post(self, request, recipe_id):
+        return post(request, recipe_id, Favorite)
 
 
 class ShoppingCardView(APIView):
@@ -77,30 +86,30 @@ class ShoppingCardView(APIView):
                                        'UTF-8'))
         buffer = io.BytesIO()
         pdf_file = canvas.Canvas(buffer)
-        pdf_file.setFont(font, 24)
-        pdf_file.drawString(150, 800, 'Список покупок.')
-        pdf_file.setFont(font, 14)
-        from_bottom = 750
+        pdf_file.setFont(font, FONT_SIZE_HEADER)
+        pdf_file.drawString(POSITION_X, POSITION_Y, 'Список покупок.')
+        pdf_file.setFont(font, FONT_SIZE)
+        from_bottom = FROM_BOTTOM
         for number, ingredient in enumerate(shopping_list, start=1):
             pdf_file.drawString(
-                50,
+                FROM_LEFT,
                 from_bottom,
                 f'{number}.  {ingredient["name"]} - {ingredient["amount"]} '
                 f'{ingredient["unit"]}',
             )
-            from_bottom -= 20
-            if from_bottom <= 50:
-                from_bottom = 800
+            from_bottom -= LINE_SPACING
+            if from_bottom <= MIN_BOTTOM:
+                from_bottom = MIN_BOTTOM + FROM_BOTTOM
                 pdf_file.showPage()
-                pdf_file.setFont(font, 14)
+                pdf_file.setFont(font, FONT_SIZE)
         pdf_file.showPage()
         pdf_file.save()
         buffer.seek(0)
         return FileResponse(buffer, as_attachment=True,
                             filename='shopping_list.pdf')
 
-    def delete(self, request, id):
-        return delete(request, id, ShoppingCart)
+    def delete(self, request, recipe_id):
+        return delete(request, recipe_id, ShoppingCart)
 
-    def post(self, request, id):
-        return post(request, id, ShoppingCart)
+    def post(self, request, recipe_id):
+        return post(request, recipe_id, ShoppingCart)

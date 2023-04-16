@@ -6,9 +6,9 @@ from .models import Recipe
 from .serializers import FavoriteSerializer
 
 
-def delete(request, id, model):
+def delete(request, recipe_id, model):
     user = request.user
-    recipe = get_object_or_404(Recipe, id=id)
+    recipe = get_object_or_404(Recipe, id=recipe_id)
     if not model.objects.filter(user=user, recipe=recipe).exists():
         return Response(
             {
@@ -25,9 +25,9 @@ def delete(request, id, model):
     )
 
 
-def post(request, id, model):
+def post(request, recipe_id, model):
     user = request.user
-    recipe = get_object_or_404(Recipe, id=id)
+    recipe = get_object_or_404(Recipe, id=recipe_id)
     if model.objects.filter(user=user, recipe=recipe).exists():
         return Response(
             {
